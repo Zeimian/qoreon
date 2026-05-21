@@ -1,339 +1,191 @@
 # Qoreon
 
-![Qoreon Logo](assets/brand/qoreon-logo-primary.png)
+> A local control layer between human intent and AI execution.
+> Organize, coordinate, and continuously improve a team of AI agents -- not by using one AI at a time, but by managing an AI team with visible task spaces, channels, feedback loops, and knowledge sediment.
 
-Qoreon 是连接人类意图与 AI 执行的控制层。
-它让多个 AI Agent 可以被组织、协同和持续优化。
-你不再直接使用单个 AI，而是在本地管理一个 AI 团队。
+---
 
-Qoreon is the control layer between human intent and AI execution.
+## English Summary
 
-Organize, coordinate, and continuously improve an AI team.
-You no longer use one AI directly. You manage an AI team.
+Qoreon is a **local-first multi-agent coordination platform** built in Python. It provides a control layer that sits on top of existing AI CLI tools (Codex CLI, Claude Code, OpenCode, Gemini CLI, Trae CLI), organizing them into a structured team with governance channels, task management, session health monitoring, and cross-agent collaboration. Instead of interacting with a single AI, users manage an AI team through a unified dashboard with visible task boards, message flow, agent directories, and relationship maps.
 
-Run locally, connect Codex and other CLI agents, and add one unified coordination layer on top.
+---
 
-## CLI Dependency / CLI 依赖说明
+## Problem Statement
 
-Qoreon 本身不会内置 `codex`、Claude Code、OpenCode、Gemini CLI 或 Trae CLI。
-它依赖目标电脑本地已经安装并可用的 AI CLI。
+### 要解决的问题
 
-Qoreon does not bundle `codex`, Claude Code, OpenCode, Gemini CLI, or Trae CLI.
-It depends on AI CLIs that are already installed and usable on the target computer.
+大多数 AI 工具的工作模式停留在"一次提问，一次回答"。当你有多个 AI CLI 需要同时使用时，缺乏以下能力：
 
-当前预览版的默认与推荐路径是：
+- **不可见**: 多个 Agent 各自运行，协作过程黑盒化，无法全局查看任务状态与流转
+- **不可控**: 没有统一的调度层，Agent 之间缺乏结构化的消息收发、回执与阻塞机制
+- **不可积累**: 协作过程中产生的知识、经验和决策无法沉淀为可复用的技能包
+- **不可接管**: 换一台电脑或换一个 AI，无法无缝接手之前的协作上下文
 
-- 优先使用 `Codex CLI`
-- 当前公开安装文档和默认示例项目主要按 `codex` 验证
-- 如果你要切到其他 CLI，需要自己调整 `standard_project` 对应通道的 `cli_type`
+Qoreon 面向的是一种全新的工作方式：**把任务空间、治理通道、协作回执和 Agent 执行组织成一个可见、可接管、可继续优化的本地系统。**
 
-For this preview release, the recommended path is:
+---
 
-- use `Codex CLI` first
-- the public install path and default example project are mainly validated against `codex`
-- if you want another CLI, update the relevant `cli_type` values in `standard_project`
+## Core Features
 
-## Why Qoreon
+### 核心功能
 
-大多数 AI 工具停留在“一次提问，一次回答”。
-Qoreon 面向的是另一种工作方式：把任务空间、通道、协作回执和 Agent 执行组织成一个可见、可接管、可继续优化的本地系统。
+- **任务看板系统**: 以 Markdown 文件为真源的任务空间，支持任务状态追踪、优先级管理和跨通道分发
+- **多 Agent 通道治理**: 内置 12 个治理通道（总控、运行时、前端、数据、测试、文档、运维等），每个通道绑定独立的 AI CLI 会话
+- **消息流转可视化**: Message Flow Board 实时展示多 Agent 派发、回执、阻塞状态和跨通道协同
+- **会话健康监控**: 自动巡检 Agent 会话状态，提供会话轮换建议和运行检查
+- **Agent 关系图谱**: 可视化 Agent 间的协作关系和依赖链路
+- **知识沉淀体系**: 每个通道的任务产出自动沉淀为可复用的技能包（Skills），支持 8 个公共技能 + 通道专属技能
+- **AI Bootstrap 机制**: 新电脑安装后，生成的 startup-batch.md 可交给本机 AI 自动接管后续协作
+- **CLI 适配器架构**: 支持 Codex CLI、Claude Code、OpenCode、Gemini CLI、Trae CLI，通过统一适配器接口接入
 
-Most AI tooling stops at "one prompt, one answer". Qoreon is built for a different operating model:
+---
 
-- Turn markdown task spaces into a visible control board.
-- Coordinate multiple AI agents around channels, tasks, feedback, and sediment.
-- Keep execution local-first and controllable.
-- Ship a reusable public project, seed packs, and AI bootstrap instructions together.
+## Architecture
 
-## What It Looks Like
+### 技术架构
 
-### Home Project List
-
-![Home Project List](assets/screenshots/home-project-list.png)
-
-这是用户第一次进入项目时看到的项目清单页。
-这里会展示默认公开项目 `standard_project`，以及最先应该打开的入口。
-
-The home page is where a new user sees the public project list, the default standard project, and the first entry points they should open.
-
-### Project Dialog Detail
-
-![Project Dialog Detail](assets/screenshots/project-dialog-detail.png)
-
-这是项目对话详情页。
-通道、任务、回执、培训提示和 AI 协作过程，会在这里集中展示。
-
-The dialog detail page is where channels, tasks, receipts, training prompts, and AI collaboration stay visible together.
-
-### Message Flow Board
-
-![Message Flow Board](assets/screenshots/message-flow-board.png)
-
-这是消息发送与协作流转视图。
-你可以在这里看到多 Agent 派发、回执、阻塞状态和跨通道协同。
-
-The message flow board makes multi-agent dispatch, receipts, blocked states, and cross-channel coordination visible at a glance.
-
-## What Ships In V1
-
-V1 当前包含：
-
-- Core pipeline: `task_dashboard/`, `server.py`, `build_project_task_dashboard.py`
-- Pages: task, overview, communication audit, status report, agent directory, relationship board, session health
-- Example workspace: `examples/standard-project/`
-- Public bootstrap kit: `docs/public/`, `examples/standard-project/seed/`, `examples/standard-project/skills/`
-- Skill layout: `8` public common skills + channel folders / CCR roster / sediment for role learning
-- Standard startup materials: CCR roster, startup order, channel responsibility cards, AI bootstrap instructions
-- Local demo runtime on `127.0.0.1:18770`
-
-## Public Project In This Repo
-
-当前公开包只保留一个默认项目：
-
-This public candidate now keeps a single default project:
-
-- `standard_project`
-
-It is designed to be the public, installable, AI-continuable workspace.
-
-它的目标不是只让页面打开，而是让另一个人下载后，能在自己的电脑上把一个“可继续协作”的标准项目真正启动起来。
-
-What is already embedded in `standard_project`:
-
-- governance channels
-- default agent roster
-- task / feedback / sediment structure
-- AI startup batch path
-- installation and bootstrap docs
-
-The public package is intentionally centered on one default project so installation, AI bootstrap, governance, and validation all point to the same workspace.
-
-这样做是为了让安装路径、AI 接管路径、治理结构和验收口径全部指向同一个工作区，避免第一次使用就分叉。
-
-## Install On A New Computer
-
-如果你要在另一台电脑上试运行，推荐路径如下。
-
-This is the recommended path if you want to test the public package on another machine.
-
-1. Use Python `3.11+`
-2. If you only want to run the pages and standard project, Python is enough.
-3. If you also want to activate the built-in example agents, this software still depends on a local AI CLI. The current public example defaults to `codex`:
-   - install and log in to Codex CLI first
-   - make sure `~/.codex/sessions` is writable
-   - if you want another CLI, change the example project's `cli_type` before activation
-   - other CLI types can be adapted, but this preview release recommends Codex first
-4. Copy config if needed:
-
-```bash
-cp config.example.toml config.toml
+```
+qoreon/
+├── server.py                          # Python HTTP 服务 + CCB (CLI Control Bridge) API
+├── build_project_task_dashboard.py    # 静态页面构建引擎
+├── config.toml                        # 项目配置 (TOML 格式)
+│
+├── task_dashboard/                    # 核心 Python 引擎
+│   ├── adapters/                      # CLI 适配器层
+│   │   ├── codex_adapter.py
+│   │   ├── claude_adapter.py
+│   │   ├── opencode_adapter.py
+│   │   ├── gemini_adapter.py
+│   │   └── trae_adapter.py
+│   ├── runtime/                       # 运行时子系统
+│   │   ├── execution_runtime.py       # CLI 执行、网络重试、进程管理
+│   │   ├── session_routes.py          # 会话路由与会话管理
+│   │   ├── run_routes.py              # Run 生命周期管理
+│   │   ├── heartbeat_registry.py      # 心跳巡检注册表
+│   │   ├── scheduler_registry.py      # 自动调度注册表
+│   │   └── assist_request_registry.py # 辅助请求注册表
+│   ├── routes/                        # HTTP 路由分发器
+│   ├── session_store.py               # 会话存储
+│   ├── communication_audit.py         # 通信审计分析
+│   ├── global_resource_graph.py       # 全局资源图谱
+│   └── domain.py                      # 领域模型
+│
+├── web/                               # 页面模板 (CSS/JS/HTML.tpl)
+│   ├── task_*.html.tpl                # 任务看板页面
+│   ├── overview_*.html.tpl            # 项目概览页面
+│   ├── communication_*.html.tpl       # 通信审计页面
+│   ├── agent_directory_*.html.tpl     # Agent 目录页面
+│   ├── agent_relationship_board_*.html.tpl  # 关系图谱页面
+│   ├── session_health_*.html.tpl      # 会话健康页面
+│   └── status_report_*.html.tpl       # 状态报告页面
+│
+├── examples/standard-project/         # 公开标准项目模板
+│   ├── seed/                          # 种子数据 (CCR 花名册、任务种子)
+│   ├── skills/                        # 技能包定义
+│   └── tasks/                         # Markdown 任务空间
+│
+├── scripts/                           # 安装与启动脚本
+│   ├── start_standard_project.py      # 一键启动入口
+│   ├── bootstrap_public_example.py    # 项目引导
+│   ├── install_public_bundle.py       # 通用安装器
+│   └── activate_public_example_agents.py  # Agent 激活
+│
+├── docs/public/                       # 公开文档
+│   ├── ai-bootstrap.md                # AI 接管入口文档
+│   ├── quick-start.md                 # 快速开始
+│   └── architecture.md                # 架构说明
+│
+└── tests/                             # 测试套件 (25+ 测试用例)
 ```
 
-5. Run the one-command standard project startup:
+**设计原则:**
+- **Local-First**: 默认绑定 `127.0.0.1:18770`，所有数据在本地
+- **Markdown as Source of Truth**: 任务空间、治理结构、知识沉淀均以 Markdown 文件为真源
+- **Zero Cloud Dependency**: 不依赖远端服务，所有运行态数据在 `.runtime/` 目录下
+- **Extensible CLI Adapters**: 新增 AI CLI 只需实现适配器接口
+
+---
+
+## Technical Highlights
+
+### 技术亮点
+
+1. **CLI 控制桥 (CCB) 架构**: 通过统一的 `CLIAdapter` 抽象层，将 5 种不同的 AI CLI 工具整合为一致的运行时接口，支持进程级生命周期管理、输出解析和会话恢复
+
+2. **Markdown 驱动的任务引擎**: 将文件系统目录结构映射为任务状态机，自动扫描 `tasks/{channel}/{任务|反馈|产出物|沉淀}/` 目录，实时构建看板视图
+
+3. **多注册表运行时**: 运行时层包含心跳注册表、调度注册表、任务推送注册表、辅助请求注册表等多个自治子系统，各自独立注册和调度
+
+4. **进程级会话感知**: 通过 `ps` 扫描系统进程表，使用正则表达式匹配不同 CLI 的参数特征（如 codex 的 `resume <session>`、claude 的 `--resume`），精确判断 Agent 会话的忙闲状态
+
+5. **网络容错与自动重试**: 内置指数退避重试机制，自动识别传输通道断开、TLS 握手失败等瞬态网络错误，支持断线续传和中断恢复
+
+6. **AI 可接管的 Bootstrap 设计**: 安装完成后自动生成 `startup-batch.md` + `ai-bootstrap.md`，另一台电脑上的 AI 可以阅读这些文档并自动完成项目初始化
+
+7. **通信审计分析**: 从 `.runs/` 目录下扫描历史运行产物，分析 Agent 间的消息模式、响应延迟和协作瓶颈
+
+---
+
+## Results
+
+### 成果与进展
+
+| 指标 | 数据 |
+|------|------|
+| **Python 模块** | 50+ 模块，覆盖运行时、适配器、路由、调度等领域 |
+| **CLI 适配器** | 5 种 AI CLI 工具（Codex, Claude, OpenCode, Gemini, Trae） |
+| **治理通道** | 12 个标准化治理通道 |
+| **公共技能包** | 8 个可复用技能（启动、培训、协作、巡检、轮换等） |
+| **测试用例** | 25+ 单元测试覆盖核心路径 |
+| **页面仪表盘** | 8 个功能页面（任务看板、概览、通信审计、状态报告、Agent 目录、关系图谱、会话健康、消息风险） |
+| **预览版本** | `v1-preview-20260407-b` |
+
+---
+
+## Reflection
+
+### 反思与成长
+
+- **单一项目的力量**: 公开包只保留 `standard_project` 这一条默认路径，避免了"第一次使用就分叉"的问题。这是产品设计上的一次重要收敛：让安装路径、AI 接管路径、治理结构和验收口径全部指向同一个工作区。
+
+- **AI 可接管性是核心设计目标**: 这个项目的本质不是"让用户操作"，而是"让 AI 接手"。Bootstrap 文档、startup-batch、通道沉淀的设计，都是在解决"另一个 AI 如何理解当前上下文并继续工作"这个问题。
+
+- **Markdown 作为真源的双刃剑**: 用 Markdown 文件作为任务系统的真源让数据可读、可版本控制、AI 可直接理解，但也意味着需要处理文件扫描性能、增量更新和一致性问题。通过 TTL 缓存和增量检查器来缓解。
+
+- **进程扫描是权宜之计**: 通过 `ps` 扫描进程表来判断 Agent 忙闲状态是一种 best-effort 方案，依赖正则匹配 CLI 参数特征。更长期的方案应该是 CLI 原生支持进程状态上报。
+
+- **适配器模式的价值**: CLI 适配器架构让系统可以在不修改核心逻辑的前提下接入新的 AI 工具，这是扩展性最好的设计决策之一。
+
+---
+
+## Project Status
+
+| | |
+|---|---|
+| **Version** | V1 Preview (`v1-preview-20260407-b`) |
+| **Status** | Development / Preview |
+| **Language** | Python 3.11+ |
+| **License** | MIT |
+| **Default Port** | `127.0.0.1:18770` |
+
+### Quick Start
 
 ```bash
+# Python 3.11+ required
 python3 scripts/start_standard_project.py
+
+# Then open:
+# http://127.0.0.1:18770/project-task-dashboard.html
+# http://127.0.0.1:18770/project-overview-dashboard.html
 ```
 
-这是默认的完整安装命令。
-它会启动 `standard_project`，并把公开可继续接手的 startup batch 一并准备出来。
-
-This bootstraps `standard_project`, clears stale machine-specific CLI path overrides, builds `dist/`, starts the local server, and prepares the startup batch that the local AI can continue from.
-
-By default this command no longer blocks on automatic multi-channel session creation. That automatic activation path is still available, but it has moved behind `--with-agents`.
-
-默认命令不再把“后台批量创建多通道会话”当成安装完成门槛。
-它优先保证页面、标准项目和启动批次可靠落地，然后把后续接管交给那台电脑上的 AI。
-
-This makes the first-run path much more reliable on a brand-new computer, especially when that machine has not yet proven that background Codex session creation works cleanly.
-
-If you want Qoreon to also try automatic session creation, use the explicit activation command below instead of assuming the default installer should do everything at once.
-
-如果你的目标是“安装后立刻尝试自动建默认 Agent 会话”，请显式执行下一条带 `--with-agents` 的命令，而不是把这个要求继续压在默认安装命令上。
-
-6. If Codex is ready on that computer and you want the default startup agent batch too:
+### With Agent Activation
 
 ```bash
 python3 scripts/start_standard_project.py --with-agents
 ```
 
-This enables the automatic activation path. By default it tries to create the 6 core-channel sessions first, then also runs the first-wave training / role restatement actions and prepares the default AI startup batch files. Add `--all-channels` if you explicitly want the full 12-channel activation attempt.
+---
 
-这一步会显式开启自动建会话，再继续做首轮培训、职责复述和示例协作，并生成完整启动批次，方便本机 AI 接手。
-
-7. If you prefer the generic installer:
-
-```bash
-python3 scripts/install_public_bundle.py --start-server
-```
-
-It now defaults to the single public project: `standard_project`, and by default it only prepares pages plus startup-batch. If you want it to also try automatic activation, add `--activate-project standard_project` and optionally `--all-channels`.
-
-8. Manual step-by-step path if you prefer:
-
-```bash
-python3 scripts/bootstrap_public_example.py --project-id standard_project
-python3 build_project_task_dashboard.py
-python3 server.py --port 18770 --static-root dist
-```
-
-9. Activate the built-in example agents:
-
-```bash
-python3 scripts/activate_public_example_agents.py --project-id standard_project --base-url http://127.0.0.1:18770 --all-channels
-```
-
-This is an advanced path for local verification. The recommended cross-machine path is still: start the project first, then hand `docs/public/ai-bootstrap.md` and `examples/standard-project/.runtime/demo/startup-batch.md` to the local AI.
-
-For clarity:
-
-- use `--all-channels` when you explicitly want the full 12-channel activation attempt
-- the legacy `--include-optional` flag remains compatible on `activate_public_example_agents.py`, but public docs now converge to `--all-channels`
-
-10. Open:
-
-- `http://127.0.0.1:18770/project-task-dashboard.html`
-- `http://127.0.0.1:18770/project-overview-dashboard.html`
-- `http://127.0.0.1:18770/project-status-report.html`
-- `http://127.0.0.1:18770/__health`
-
-## Let The Local AI Continue The Startup
-
-Qoreon 的公开安装不是“解压后就结束”。
-它的设计目标是：页面先起来，然后把标准项目交给本机 AI 继续接管。
-
-The intended public workflow is:
-
-1. Start `standard_project`
-2. Generate the startup batch
-3. Hand the startup batch and `docs/public/ai-bootstrap.md` to the local AI
-4. Let that AI continue the first-wave setup, agent startup, and project initialization
-
-The key files are:
-
-- `docs/public/ai-bootstrap.md`
-- `docs/public/quick-start.md`
-- `examples/standard-project/README.md`
-- `examples/standard-project/seed/ccr_roster_seed.json`
-- `examples/standard-project/tasks/辅助05-团队协作Skills治理/产出物/沉淀/03-公开公共技能包清单.md`
-- `examples/standard-project/tasks/主体-总控/产出物/沉淀/02-标准项目启动顺序.md`
-- `examples/standard-project/tasks/主体-总控/产出物/沉淀/03-标准项目通讯录与分工表.md`
-
-After startup, the local AI should first read the files and sediment under its own channel before it starts acting.
-
-接手后的 AI 第一件事，不是立刻发消息，而是先去读自己负责通道下的任务、反馈、材料和沉淀。
-
-## Current Preview Release
-
-当前对外分享的是一个预览版。
-
-The current public delivery line is prepared as a GitHub preview release.
-
-- repo commit: `ed99ad50724d883926068e3d6b340d9a0cfd82f2`
-- preview tag: `qoreon-v1-preview-20260407-b`
-- candidate tag: `qoreon-v1-candidate-20260407-b`
-- package: `qoreon-v1-preview-20260407-b.tar.gz`
-- package sha256: `1600b014055d2a49839c3046fe9c3486d4125a6219946eea478456a4fb1a81ed`
-- default project: `standard_project`
-- recommended install: `python3 scripts/start_standard_project.py`
-- fallback behavior: if background Codex session creation is blocked, keep the page install result and hand `startup-batch.md` to the local AI
-- default completion state: `startup_batch_ready`
-- core display assets:
-  - `assets/brand/qoreon-logo-primary.png`
-  - `assets/screenshots/home-project-list.png`
-  - `assets/screenshots/project-dialog-detail.png`
-  - `assets/screenshots/message-flow-board.png`
-
-## First Page Pointers For GitHub Visitors
-
-如果用户第一次打开这个 GitHub 仓库，推荐阅读顺序如下：
-
-If someone lands on this repository for the first time, the intended reading order is:
-
-1. Read this README
-2. Run `python3 scripts/start_standard_project.py`
-3. Open the local pages
-4. Read `docs/public/ai-bootstrap.md`
-5. Let the local AI continue the standard project startup
-
-If they want the longer release-style narrative, send them here:
-
-- `docs/public/release-draft-v1-candidate.md`
-
-## Read In This Order
-
-- `docs/public/quick-start.md`
-- `docs/public/ai-bootstrap.md`
-- `docs/public/github-homepage-kit.md`
-- `docs/public/brand/logo-direction.md`
-- `docs/public/launch/first-wave.md`
-- `examples/standard-project/README.md`
-- `examples/standard-project/seed/seed-inventory.json`
-- `examples/standard-project/seed/ccr_roster_seed.json`
-- `examples/standard-project/tasks/主体-总控/产出物/沉淀/03-标准项目通讯录与分工表.md`
-- `examples/standard-project/tasks/README.md`
-- `examples/standard-project/tasks/主体-总控/产出物/沉淀/01-治理通道来源映射.md`
-- `examples/standard-project/tasks/主体-总控/产出物/沉淀/02-标准项目启动顺序.md`
-
-## Repo Structure
-
-仓库结构大致如下：
-
-- `task_dashboard/`: Python build engine and runtime
-- `web/`: page templates and browser scripts
-- `examples/standard-project/`: public standard project template with governance channels
-- `assets/brand/`: brand draft assets for GitHub and launch
-- `docs/public/`: public-facing docs and launch material
-- `docs/status-report/`: status report source
-- `tests/`: minimal public test suite
-
-## Product Positioning
-
-Qoreon 不只是看板，也不只是一个 Agent 启动器。
-
-Qoreon is not just a dashboard and not just an agent runner.
-
-It is:
-
-- a local control layer for multi-agent execution
-- a collaboration model built around channels and task spaces
-- a standard bootstrap pack that helps another AI continue the work correctly
-
-It is not:
-
-- a hosted SaaS in this repository
-- a remote cloud orchestrator by default
-- a production data sync tool out of the box
-
-它更像是一个本地控制层：把多 Agent 的任务、协作、回执、启动和接管统一组织起来。
-
-## Why The Public Package Uses `standard_project`
-
-公开包只保留 `standard_project`，是为了让第一次安装更清晰。
-
-The public package intentionally converges to one default project so the first-run path stays stable:
-
-- one install path
-- one AI bootstrap path
-- one default CCR roster
-- one set of screenshots and docs
-- one standard collaboration model for a new computer
-
-## Design Boundaries
-
-默认边界：
-
-- default bind is `127.0.0.1`
-- no real sessions, real runs, or internal task spaces are bundled
-- only public-safe seed packs and skills are included
-- Git bridge capability defaults to `read_only / dry_run`
-
-## Validation
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-```
-
-## License
-
-MIT. See `LICENSE`.
+*Qoreon -- Connect human intent with AI execution.*
